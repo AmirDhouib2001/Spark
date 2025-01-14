@@ -6,7 +6,7 @@ from pyspark.sql.window import Window
 spark = SparkSession.builder.appName("No UDF Example").getOrCreate()
 
 # Lecture du fichier de données
-df = spark.read.csv("/opt/spark/spark-handson/src/resources/exo4/sell.csv", header=True, inferSchema=True)
+df = spark.read.csv("/spark/spark-handson/src/resources/exo4/sell.csv", header=True, inferSchema=True)
 
 # Ajout de la colonne `category_name` sans utiliser d'UDF
 df = df.withColumn("category_name", when(df['category'] < 6, 'food').otherwise('furniture'))
