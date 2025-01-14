@@ -1,38 +1,38 @@
+import pyspark.sql.functions as f
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import col, when
 
-def filter_adult_clients(df):
-    return df.filter(col('age') >= 18)
+def read_files(spark):
+    df_clients = spark.read.option("header", True).csv("src/resources/exo2/clients_bdd.csv")
+    df_villes = spark.read.option("header", True).csv("src/resources/exo2/city_zipcode.csv")
+    return df_clients, df_villes
 
-def join_clients_with_cities(clients_df, villes_df):
-    return clients_df.join(villes_df, clients_df['zip'] == villes_df['zip'], 'inner') \
-                     .select(clients_df['name'], clients_df['age'], clients_df['zip'], villes_df['city'])
+def filter_major_clients(df):
+    return df.filter(f.col("age") >= 18)
 
+def join_with_city(df_clients, df_villes):
+    return df_clients.join(df_villes, "zip", "inner") \
+                     .select("name", "age", "zip", "city")
 
 def add_departement_column(df):
-    return df.withColumn(
-        'departement',
-        when(col('zip').startswith('2') & (col('zip').cast('int') <= 20190), '2A')
-        .when(col('zip').startswith('2') & (col('zip').cast('int') > 20190), '2B')
-        .otherwise(col('zip').substr(1, 2))
-    )
+    return df.withColumn("departement", f.when(f.col("zip").substr(1, 2) == "20", 
+                                               f.when(f.col("zip") <= "20190", "2A").otherwise("2B"))
+                                      .otherwise(f.col("zip").substr(1, 2)))
+
+def write_output(df_result):
+    df_result.write.mode("overwrite").parquet("data/exo2/clean")
+
 def main():
-    spark = SparkSession.builder.appName("exo2_clean_job").getOrCreate()
+    spark = SparkSession.builder \
+        .appName("clean_job") \
+        .master("local[*]") \
+        .getOrCreate()
 
-    clients_df = spark.read.option("header", "true").csv("src/resources/exo2/clients_bdd.csv")
-    villes_df = spark.read.option("header", "true").csv("src/resources/exo2/city_zipcode.csv")
-
-    clients_adult_df = filter_adult_clients(clients_df)
-
-    clients_with_city_df = join_clients_with_cities(clients_adult_df, villes_df)
-
-    clients_with_city_dept_df = add_departement_column(clients_with_city_df)
-
-    output_path = "data/exo2/clean"
-
-    clients_with_city_dept_df.write.mode('overwrite').parquet(output_path)
+    df_clients, df_villes = read_files(spark)
+    df_clients_majeurs = filter_major_clients(df_clients)
+    df_clients_villes = join_with_city(df_clients_majeurs, df_villes)
+    df_clients_dept = add_departement_column(df_clients_villes)
+    write_output(df_clients_dept)
     
-
     spark.stop()
 
 if __name__ == "__main__":
