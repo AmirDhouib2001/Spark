@@ -1,7 +1,7 @@
 import unittest
 from pyspark.sql import Row
 from tests.fr.hymaia.spark_test_case import spark
-from src.fr.hymaia.exo2.spark_clean_job import filter_adult_clients, join_clients_with_cities, add_departement_column
+from src.fr.hymaia.exo2.spark_clean_job import filter_major_clients, join_with_city, add_departement_column
 
 class TestCaseClean(unittest.TestCase):
     
@@ -15,7 +15,7 @@ class TestCaseClean(unittest.TestCase):
             Row(name='test', age=19, zip='77002')
         ])
 
-        actual_df = filter_adult_clients(input_df)
+        actual_df = filter_major_clients(input_df)
 
         expected_schema = [('name', 'string'), ('age', 'bigint'), ('zip', 'string')]
         self.assertEqual(actual_df.dtypes, expected_schema)
@@ -36,7 +36,7 @@ class TestCaseClean(unittest.TestCase):
             Row(name='test', age=22, zip='77002', city='Lyon')
         ])
 
-        actual_df = join_clients_with_cities(clients_df, cities_df)
+        actual_df = join_with_city(clients_df, cities_df)
 
         expected_schema = [('name', 'string'), ('age', 'bigint'), ('zip', 'string'), ('city', 'string')]
         self.assertEqual(actual_df.dtypes, expected_schema)

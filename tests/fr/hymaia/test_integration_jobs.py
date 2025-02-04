@@ -1,7 +1,7 @@
 import unittest
 from pyspark.sql import Row
 from tests.fr.hymaia.spark_test_case import spark
-from src.fr.hymaia.exo2.spark_clean_job import filter_adult_clients, join_clients_with_cities, add_departement_column
+from src.fr.hymaia.exo2.spark_clean_job import filter_major_clients, join_with_city, add_departement_column
 from src.fr.hymaia.exo2.spark_aggregate_job import calculate_population_by_departement
 
 class TestIntegrationJobs(unittest.TestCase):
@@ -22,9 +22,9 @@ class TestIntegrationJobs(unittest.TestCase):
 
         ])
 
-        filtered_clients_df = filter_adult_clients(clients_df)
+        filtered_clients_df = filter_major_clients(clients_df)
 
-        clients_with_city_df = join_clients_with_cities(filtered_clients_df, cities_df)
+        clients_with_city_df = join_with_city(filtered_clients_df, cities_df)
 
         clients_with_city_dept_df = add_departement_column(clients_with_city_df)
 

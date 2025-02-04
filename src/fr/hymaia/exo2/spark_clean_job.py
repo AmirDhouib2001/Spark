@@ -2,8 +2,8 @@ import pyspark.sql.functions as f
 from pyspark.sql import SparkSession
 
 def read_files(spark):
-    df_clients = spark.read.option("header", True).csv("src/resources/exo2/clients_bdd.csv")
-    df_villes = spark.read.option("header", True).csv("src/resources/exo2/city_zipcode.csv")
+    df_clients = spark.read.option("header", True).csv("/spark/spark-handson/src/resources/exo2/clients_bdd.csv")
+    df_villes = spark.read.option("header", True).csv("/spark/spark-handson/src/resources/exo2/city_zipcode.csv")
     return df_clients, df_villes
 
 def filter_major_clients(df):
